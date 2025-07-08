@@ -27,3 +27,7 @@ class TipoProductosView(viewsets.ModelViewSet):
 class UnidadMedidaView(viewsets.ModelViewSet):
     serializer_class = UnidadesMedidaSerializer
     queryset = UnidadesMedida.objects.all()
+    
+class ImpuestoEspecificoView(viewsets.ModelViewSet):
+    serializer_class = ImpuestosEspecificosSerializer
+    queryset = ImpuestoEspecifico.objects.all()

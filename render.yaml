@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: django-backend
+    env: python
+    plan: free
+    buildCommand: ""
+    startCommand: ./start.sh
+    envVars:
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"

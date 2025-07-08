@@ -25,8 +25,18 @@ class Productos(models.Model):
         related_name='productos',
         default=None,
     )
+    impuesto_especifico = models.ManyToManyField(
+        'ImpuestoEspecifico',
+        blank=True
+    )
+    def calcular_impuesto_especifico(self, subtotal):
+        return sum([
+            subtotal * (impuesto.porcentaje / 100)
+            for impuesto in self.impuesto_especifico.all()
+        ])
     def proveedores_con_precios(self):
         return self.proveedores_info.select_related('proveedor').all()
+    
     
     def __str__(self):
         return self.nombre_producto
@@ -50,6 +60,18 @@ class UnidadesMedida(models.Model):
 
     def __str__(self):
         return self.unidad_medida
+    
+class ProductoProveedorCodigo(models.Model):
+    producto = models.ForeignKey('Productos', on_delete=models.CASCADE, related_name='codigos_proveedor')
+    proveedor = models.ForeignKey('Proveedores', on_delete=models.CASCADE, related_name='codigos_productos')
+    codigo_proveedor = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('producto', 'proveedor', 'codigo_proveedor')
+
+    def __str__(self):
+        return f"{self.codigo_proveedor} ({self.proveedor.nombre_comercial})"
+
 
 class Proveedores(models.Model):
     rut_proveedor = models.CharField(max_length=12, unique=True, primary_key=True, help_text="Formato: XX.XXX.XXX-X")
@@ -103,3 +125,32 @@ class Recetas(models.Model):
 
     class Meta:
         unique_together = ('id_producto_final', 'id_producto_ingrediente')
+        
+class ImpuestoEspecifico(models.Model):
+    nombre_impuesto = models.CharField(max_length=100)
+    porcentaje = models.DecimalField(max_digits=5, decimal_places=2)
+        
+    def __str__(self):
+        return f"{self.nombre_impuesto} ({self.porcentaje}%)"
+
+class ProductoProveedorCodigo(models.Model):
+    producto = models.ForeignKey('Productos', on_delete=models.CASCADE, related_name='codigos_proveedor')
+    proveedor = models.ForeignKey('Proveedores', on_delete=models.CASCADE, related_name='codigos_productos')
+    codigo_proveedor = models.CharField(max_length=100)
+
+    class Meta:
+        unique_together = ('producto', 'proveedor', 'codigo_proveedor')
+
+    def __str__(self):
+        return f"{self.codigo_proveedor} ({self.proveedor.nombre_comercial})"
+    
+def buscar_producto_por_codigo_proveedor(codigo, proveedor_id):
+    try:
+        relacion = ProductoProveedorCodigo.objects.select_related('producto').get(
+            codigo_proveedor=codigo,
+            proveedor_id=proveedor_id
+        )
+        return relacion.producto
+    except ProductoProveedorCodigo.DoesNotExist:
+        return None
+

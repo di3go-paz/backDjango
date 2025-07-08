@@ -1,4 +1,5 @@
 from pathlib import Path
+import os
 from decouple import config
 import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -8,15 +9,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = config('SECRET_KEY')
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
+SECRET_KEY = os.getenv('SECRET_KEY', 'unsafe-secret')
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config('DEBUG', default=False, cast=bool)
-
-ALLOWED_HOSTS = []
-
-
+ALLOWED_HOSTS = os.getenv['*']
+#ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost").split(",")
 # Application definition
 
 INSTALLED_APPS = [
@@ -31,6 +28,7 @@ INSTALLED_APPS = [
     'apps.inventory', #modulo para gestion de inventario como salidas entradas y ajustes.
     'apps.users',#modulo para autentificarse y mantener las cuentas de usuarios.
     'apps.rrhh', #modulo para gestion de recursos humanos como empleados, departamentos y puestos.
+    'apps.compras', #modulo para gestion de compras como facturas, compras, detalle de facturas, orden de compra, detalle orden de compra.
 ]
 
 MIDDLEWARE = [
@@ -115,7 +113,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = 'static/'
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
@@ -123,3 +122,11 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'users.CustomUser'
+
+# Archivos estáticos para producción (Render)
+STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# WhiteNoise para servir estáticos
+MIDDLEWARE.insert(1, 'whitenoise.middleware.WhiteNoiseMiddleware')
+

@@ -64,6 +64,16 @@ class ProductosSerializer(serializers.ModelSerializer):
             }
             for pp in obj.proveedores_info.all()
         ]
+class ImpuestosEspecificosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImpuestoEspecifico
+        fields = '__all__'
+        read_only_fields = ('id',)
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation['nombre'] = instance.nombre
+        return representation
 
 
 

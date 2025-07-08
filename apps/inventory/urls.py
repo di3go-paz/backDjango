@@ -9,6 +9,7 @@ router.register(r'proveedores', ProveedorView, basename='proveedores')
 router.register(r'contactos', ContactoView, basename='contactos')
 router.register(r'tipos_productos', TipoProductosView, basename='tipos_productos')
 router.register(r'unidad_medida', UnidadMedidaView, basename='unidad_medida')
+router.register(r'impuestos_especificos', ImpuestoEspecificoView, basename='impuestos_especificos')
 
 urlpatterns = [
     path('api/v1/', include(router.urls))

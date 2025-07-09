@@ -1,16 +1,8 @@
-# config/create_superuser.py
-import os
-import django
+from apps.users.models import CustomUser
 
-os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
-django.setup()
-
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
-
-if not User.objects.filter(username="admin").exists():
-    User.objects.create_superuser("admin", "admin@example.com", "admin123")
-    print("Superuser creado ✅")
-else:
-    print("El superusuario ya existe")
+CustomUser.objects.create_superuser(
+    username="admin",
+    password="admin123",
+    is_staff=True,
+    is_superuser=True
+)

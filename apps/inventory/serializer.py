@@ -75,5 +75,8 @@ class ImpuestosEspecificosSerializer(serializers.ModelSerializer):
         representation['nombre'] = instance.nombre
         return representation
 
-
+class KardexSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Kardex
+        fields = '__all__'
 

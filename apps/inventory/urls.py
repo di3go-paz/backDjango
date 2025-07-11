@@ -12,7 +12,8 @@ router.register(r'unidad_medida', UnidadMedidaView, basename='unidad_medida')
 router.register(r'impuestos_especificos', ImpuestoEspecificoView, basename='impuestos_especificos')
 
 urlpatterns = [
-    path('api/v1/', include(router.urls))
+    path('api/v1/', include(router.urls)),
+    path('kardex/<int:producto_id>/', KardexView.as_view(), name='kardex-producto'),
     
 ]
 

@@ -1,5 +1,6 @@
 from django.db import models
 import uuid as UUID
+from inventory.utils import actualizar_kardex
 
 class Productos(models.Model):
     nombre_producto = models.CharField(max_length=100)
@@ -154,3 +155,69 @@ def buscar_producto_por_codigo_proveedor(codigo, proveedor_id):
     except ProductoProveedorCodigo.DoesNotExist:
         return None
 
+class Kardex(models.Model):
+    producto = models.ForeignKey('Productos', on_delete=models.CASCADE, related_name='kardex')
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    MOVIMIENTO_CHOICES = [
+        ('compra', 'Compra'),
+        ('venta', 'Venta'),
+        ('traslado', 'Traslado entre sucursales'),
+        ('produccion', 'Entrega a producción'),
+        ('ajuste_positivo', 'Ajuste positivo'),
+        ('ajuste_negativo', 'Ajuste negativo'),
+        ('merma', 'Merma o pérdida'),
+    ]
+    tipo_movimiento = models.CharField(max_length=20, choices=MOVIMIENTO_CHOICES)
+    referencia_id = models.PositiveIntegerField(null=True, blank=True)  # ID de factura, orden, ajuste, etc.
+    detalle = models.CharField(max_length=255, blank=True)
+
+    cantidad = models.DecimalField(max_digits=10, decimal_places=2)
+    costo_unitario = models.DecimalField(max_digits=10, decimal_places=2)
+    saldo_cantidad = models.DecimalField(max_digits=10, decimal_places=2)
+    saldo_valor = models.DecimalField(max_digits=10, decimal_places=2)
+
+    class Meta:
+        ordering = ['fecha']
+
+class MovimientoInventario(models.Model):
+    ENTRADA = 'entrada'
+    SALIDA = 'salida'
+    AJUSTE = 'ajuste'
+    TRASLADO = 'traslado'
+
+    TIPOS_MOVIMIENTO = [
+        (ENTRADA, 'Entrada'),
+        (SALIDA, 'Salida'),
+        (AJUSTE, 'Ajuste'),
+        (TRASLADO, 'Traslado'),
+    ]
+
+    SUBTIPOS_MOVIMIENTO = [
+        ('compra', 'Compra'),
+        ('venta', 'Venta'),
+        ('ajuste_positivo', 'Ajuste Positivo'),
+        ('ajuste_negativo', 'Ajuste Negativo'),
+        ('traslado_entrada', 'Traslado Entrada'),
+        ('traslado_salida', 'Traslado Salida'),
+        ('merma', 'Merma'),
+        ('produccion', 'Producción'),
+    ]
+
+    producto = models.ForeignKey(Productos, on_delete=models.CASCADE, related_name='movimientos')
+    tipo = models.CharField(max_length=20, choices=TIPOS_MOVIMIENTO)
+    subtipo = models.CharField(max_length=20, choices=SUBTIPOS_MOVIMIENTO)
+    cantidad = models.DecimalField(max_digits=12, decimal_places=2)
+    costo_unitario = models.DecimalField(max_digits=12, decimal_places=2)
+    fecha = models.DateTimeField(auto_now_add=True)
+
+    documento_referencia = models.CharField(max_length=100, blank=True, null=True)  # ej: nro de factura o traslado
+    observacion = models.TextField(blank=True, null=True)
+    
+    def __str__(self):
+        return f"{self.fecha.date()} - {self.producto} - {self.tipo} - {self.cantidad}"
+    
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        actualizar_kardex(self.producto)
+    

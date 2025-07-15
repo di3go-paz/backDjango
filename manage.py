@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-"""Django's command-line utility for administrative tasks."""
 import os
 import sys
 
@@ -7,24 +5,10 @@ import sys
 def main():
     """Run administrative tasks."""
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
+
     
     # --- Bloque agregado para crear superusuario desde users_data.json ---
-    try:
-        import django
-        django.setup()
-
-        from django.contrib.auth import get_user_model
-        from django.core.management import call_command
-
-        User = get_user_model()
-
-        if not User.objects.filter(is_superuser=True).exists():
-            print("⚠️  No hay superusuario. Cargando desde users_data.json...")
-            call_command('loaddata', 'fixtures/users_data.json')
-            print("✅ Superusuario importado correctamente.")
-    except Exception as e:
-        print(f"❌ Error al intentar cargar el superusuario: {e}")
-    # -----------------------------------------------------------------------
+    # ---------------------------------------------------------------------
 
     try:
         from django.core.management import execute_from_command_line

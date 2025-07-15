@@ -1,42 +1,66 @@
-from django.shortcuts import render
-from .models import *
+# views.py
 from rest_framework import viewsets
-from .serializer import *
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.utils.dateparse import parse_date
+from .models import *
+from .serializer import *
+
+# -----------------------------
+# ViewSets CRUD principales
+# -----------------------------
 
 class ProductoView(viewsets.ModelViewSet):
-    serializer_class = ProductosSerializer
+    """
+    Vista para productos.
+    - Usa serializer de solo lectura para GET.
+    - Usa serializer de escritura para POST, PUT, PATCH.
+    """
     queryset = Productos.objects.all()
 
+    def get_serializer_class(self):
+        if self.action in ['create', 'update', 'partial_update']:
+            return ProductosWriteSerializer
+        return ProductosSerializer
 
 class DepartamentoView(viewsets.ModelViewSet):
-    serializer_class = DepartamentosSerializer
     queryset = Departamentos.objects.all()
+    serializer_class = DepartamentosSerializer
 
-class ProveedorView(viewsets.ModelViewSet):
-    serializer_class = ProveedoresSerializer
-    queryset = Proveedores.objects.all()
-    
-class ContactoView(viewsets.ModelViewSet):
-    serializer_class = ContactosSerializer
-    queryset = Contactos.objects.all()
-    
 class TipoProductosView(viewsets.ModelViewSet):
-    serializer_class = TiposProductosSerializer
     queryset = TiposProductos.objects.all()
+    serializer_class = TiposProductosSerializer
 
 class UnidadMedidaView(viewsets.ModelViewSet):
-    serializer_class = UnidadesMedidaSerializer
     queryset = UnidadesMedida.objects.all()
-    
+    serializer_class = UnidadesMedidaSerializer
+
+class ProveedorView(viewsets.ModelViewSet):
+    queryset = Proveedores.objects.all()
+    serializer_class = ProveedoresSerializer
+
+class ContactoView(viewsets.ModelViewSet):
+    queryset = Contactos.objects.all()
+    serializer_class = ContactosSerializer
+
 class ImpuestoEspecificoView(viewsets.ModelViewSet):
-    serializer_class = ImpuestosEspecificosSerializer
     queryset = ImpuestoEspecifico.objects.all()
+    serializer_class = ImpuestosEspecificosSerializer
+
+class ProductoProveedorView(viewsets.ModelViewSet):
+    queryset = ProductoProveedor.objects.all()
+    serializer_class = ProductoProveedorSerializer
+
+# -----------------------------
+# Vista para Kardex filtrado
+# -----------------------------
 
 class KardexView(APIView):
+    """
+    Devuelve el historial de movimientos (kardex) de un producto específico.
+    Permite filtrar por fecha de inicio y fin con query params.
+    """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, producto_id):
@@ -52,3 +76,15 @@ class KardexView(APIView):
         kardex_qs = kardex_qs.order_by('fecha')
         serializer = KardexSerializer(kardex_qs, many=True)
         return Response(serializer.data)
+
+# -----------------------------
+# Vista para stock actual
+# -----------------------------
+
+class StockActualView(viewsets.ReadOnlyModelViewSet):
+    """
+    Solo permite lectura del stock actual por producto.
+    Útil para dashboards o vistas rápidas.
+    """
+    queryset = StockActual.objects.select_related('producto')
+    serializer_class = StockActualSerializer

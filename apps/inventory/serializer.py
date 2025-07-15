@@ -1,27 +1,12 @@
+# serializers.py
 from rest_framework import serializers
 from .models import *
-
-class ProductosSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Productos
-        fields = '__all__'
-
 
 class DepartamentosSerializer(serializers.ModelSerializer):
     class Meta:
         model = Departamentos
         fields = '__all__'
 
-class ProveedoresSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Proveedores
-        fields = '__all__'
-        
-class ContactosSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Contactos
-        fields = '__all__'
-        
 class TiposProductosSerializer(serializers.ModelSerializer):
     class Meta:
         model = TiposProductos
@@ -31,20 +16,28 @@ class UnidadesMedidaSerializer(serializers.ModelSerializer):
     class Meta:
         model = UnidadesMedida
         fields = '__all__'
-        
-class ProductoProveedorSerializer(serializers.ModelSerializer):
-    producto = ProductosSerializer(read_only=True)
-    proveedor = ProveedoresSerializer(read_only=True)
 
+class ProveedoresSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ProductoProveedor
+        model = Proveedores
         fields = '__all__'
-        read_only_fields = ('producto', 'proveedor')
-        
+
+class ContactosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Contactos
+        fields = '__all__'
+
+class ImpuestosEspecificosSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ImpuestoEspecifico
+        fields = '__all__'
+
+
 class ProductosSerializer(serializers.ModelSerializer):
     nombre_departamento = DepartamentosSerializer(read_only=True)
     nombre_tipo = TiposProductosSerializer(read_only=True)
     unidad_medida = UnidadesMedidaSerializer(read_only=True)
+    impuesto_especifico = ImpuestosEspecificosSerializer(many=True, read_only=True)
     proveedores_info = serializers.SerializerMethodField()
 
     class Meta:
@@ -64,19 +57,31 @@ class ProductosSerializer(serializers.ModelSerializer):
             }
             for pp in obj.proveedores_info.all()
         ]
-class ImpuestosEspecificosSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ImpuestoEspecifico
-        fields = '__all__'
-        read_only_fields = ('id',)
+class ProductoProveedorSerializer(serializers.ModelSerializer):
+    producto = ProductosSerializer(read_only=True)
+    proveedor = ProveedoresSerializer(read_only=True)
 
-    def to_representation(self, instance):
-        representation = super().to_representation(instance)
-        representation['nombre'] = instance.nombre
-        return representation
+    class Meta:
+        model = ProductoProveedor
+        fields = '__all__'
+        read_only_fields = ('producto', 'proveedor')
+
+class ProductosWriteSerializer(serializers.ModelSerializer):
+    impuesto_especifico = serializers.PrimaryKeyRelatedField(queryset=ImpuestoEspecifico.objects.all(), many=True)
+
+    class Meta:
+        model = Productos
+        fields = '__all__'
 
 class KardexSerializer(serializers.ModelSerializer):
     class Meta:
         model = Kardex
         fields = '__all__'
 
+class StockActualSerializer(serializers.ModelSerializer):
+    nombre_producto = serializers.CharField(source='producto.nombre_producto', read_only=True)
+    codigo_producto = serializers.CharField(source='producto.codigo_producto', read_only=True)
+
+    class Meta:
+        model = StockActual
+        fields = ['id', 'producto', 'nombre_producto', 'codigo_producto', 'cantidad', 'actualizado_en']

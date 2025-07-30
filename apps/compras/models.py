@@ -1,6 +1,6 @@
 # models.py
 from django.db import models
-from apps.inventory.models import Proveedores, Productos
+from apps.inventory.models import Proveedores, Productos, MovimientoInventario
 
 class OrdenesCompra(models.Model):
     fecha = models.DateField()
@@ -68,6 +68,26 @@ class FacturasCompras(models.Model):
         self.total = self.valor_neto + self.iva + self.impuestos_especificos
         self.save()
 
+    def save(self, *args, **kwargs):
+        estado_anterior = None
+        if self.pk:
+            estado_anterior = FacturasCompras.objects.get(pk=self.pk).estado
+
+        super().save(*args, **kwargs)
+
+        # Si cambia a "recibida", generar movimientos de inventario
+        if self.estado == 'recibida' and estado_anterior != 'recibida':
+            for detalle in self.detalles.all():
+                MovimientoInventario.objects.create(
+                    producto=detalle.producto,
+                    tipo='entrada',
+                    subtipo='compra',
+                    cantidad=detalle.cantidad,
+                    costo_unitario=detalle.precio_unitario,
+                    documento_referencia=f"Factura #{self.id}",
+                    observacion="Ingreso automático por factura recibida"
+                )
+
     def __str__(self):
         return f"Factura #{self.id} - {self.proveedor}"
 
@@ -89,3 +109,4 @@ class DetalleFacturaCompra(models.Model):
 
     def __str__(self):
         return f"{self.producto} x {self.cantidad}"
+

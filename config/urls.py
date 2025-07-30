@@ -10,5 +10,6 @@ urlpatterns = [
     path('', lambda request: redirect('admin:index')),
     path('admin/', admin.site.urls),
     path('users/', include('apps.users.urls')),
-    path('inventory/', include('apps.inventory.urls')),
+    path('api/inventory/', include('apps.inventory.urls')),
+    path('api/compras/', include('apps.compras.urls')),
 ]

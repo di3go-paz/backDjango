@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     'apps.users',#modulo para autentificarse y mantener las cuentas de usuarios.
     'apps.rrhh', #modulo para gestion de recursos humanos como empleados, departamentos y puestos.
     'apps.compras', #modulo para gestion de compras como facturas, compras, detalle de facturas, orden de compra, detalle orden de compra.
+    'rest_framework.authtoken', #para autentificacion de token en la api.
 ]
 
 MIDDLEWARE = [
@@ -46,10 +47,12 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
 ]
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.BasicAuthentication',
-    )
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ]
 }
 
 ROOT_URLCONF = 'config.urls'

@@ -15,4 +15,4 @@ router.register(r'usuarios', UserViewSet)
 urlpatterns = [
     path('', include(router.urls)),
     path("api/token-auth/", obtain_auth_token),
-]  # Incluir en urls.py global como: path('api/users/', include('apps.users.urls'))
+]  # Incluir en urls.py global como: path('/users/', include('apps.users.urls'))

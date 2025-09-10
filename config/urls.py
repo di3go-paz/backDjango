@@ -12,4 +12,4 @@ urlpatterns = [
     path('users/', include('apps.users.urls')),
     path('api/inventory/', include('apps.inventory.urls')),
     path('api/compras/', include('apps.compras.urls')),
-]
+] 

@@ -43,7 +43,6 @@ class CustomAuthToken(ObtainAuthToken):
             'user': {
                 'id': user.id,
                 'username': user.username,
-                'email': user.email,
-                'rol': user.rol,   # 👈 Aquí devuelves el rol
+                'rol': user.rol,   # 👈 este sí existe en tu modelo
             }
         })

@@ -14,6 +14,5 @@ router = DefaultRouter()
 router.register(r'usuarios', UserViewSet)
 
 urlpatterns = [
-    path('', include(router.urls)),
     path("api/token-auth/", CustomAuthToken.as_view(), name="token-auth"),  # Ruta para obtener token con rol
 ]  # Incluir en urls.py global como: path('/users/', include('apps.users.urls'))
